@@ -1,14 +1,17 @@
 # -*- conf -*-
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 MAINTAINER Maciej Pasternacki <maciej@3ofcoins.net>
 
 EXPOSE 80 443
 VOLUME /var/opt/opscode
 
+ARG SERVER_VERSION=12.19.31
+ARG CLIENT_VERSION=14.15.6
+
 COPY install.sh /tmp/install.sh
 
-RUN [ "/bin/sh", "/tmp/install.sh" ]
+RUN [ "/bin/bash", "/tmp/install.sh" ]
 
 COPY init.rb /init.rb
 COPY chef-server.rb /.chef/chef-server.rb

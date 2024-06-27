@@ -1,34 +1,24 @@
-#!/bin/sh
-set -e -x
+#!/bin/bash
+set -exo pipefail
 
-## You can update the versions and SHA256 from the download page in
-## comments above.
-# https://downloads.chef.io/chef-server#ubuntu
-SERVER_VERSION="12.18.14"
-SERVER_SHA256="2be59db9ac71c5595ffd605e96de81fc3ef36aa4756fa73b2be9a53edbfce809"
-# https://downloads.chef.io/chef/14.6.47#ubuntu
-CLIENT_VERSION="14.6.47"
-CLIENT_SHA256="81dc8634609493a8e9c9dbcb027855027812c902db95e1884b18fe368acbd047"
+## You can update the versions from the release notes pages
+# https://docs.chef.io/release_notes_server/
+: ${SERVER_VERSION:=12.18.14}
+# https://docs.chef.io/release_notes_client/
+: ${CLIENT_VERSION:=14.6.47}
 
-# Temporary work dir
-tmpdir="`mktemp -d`"
-cd "$tmpdir"
+OMNITRUCK_URL=https://omnitruck.chef.io/install.sh
+SERVER_PROJECT=chef-server
+CLIENT_PROJECT=chef
 
 # Install prerequisites
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q --yes
-apt-get install -q --yes logrotate vim-nox hardlink wget ca-certificates
+apt-get install -q --yes logrotate vim-nox hardlink curl ca-certificates
 
 # Download and install Chef's packages
-wget -nv https://packages.chef.io/files/stable/chef-server/${SERVER_VERSION}/ubuntu/16.04/chef-server-core_${SERVER_VERSION}-1_amd64.deb
-wget -nv https://packages.chef.io/files/stable/chef/${CLIENT_VERSION}/ubuntu/16.04/chef_${CLIENT_VERSION}-1_amd64.deb
-
-sha256sum -c - <<EOF
-${SERVER_SHA256}  chef-server-core_${SERVER_VERSION}-1_amd64.deb
-${CLIENT_SHA256}  chef_${CLIENT_VERSION}-1_amd64.deb
-EOF
-
-dpkg -i chef-server-core_${SERVER_VERSION}-1_amd64.deb chef_${CLIENT_VERSION}-1_amd64.deb
+curl -fsSL ${OMNITRUCK_URL} | bash -s -- -P ${SERVER_PROJECT} -v ${SERVER_VERSION}
+curl -fsSL ${OMNITRUCK_URL} | bash -s -- -P ${CLIENT_PROJECT} -v ${CLIENT_VERSION}
 
 # Extra setup
 rm -rf /etc/opscode
