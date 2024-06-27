@@ -14,7 +14,7 @@ CLIENT_PROJECT=chef
 # Install prerequisites
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q --yes
-apt-get install -q --yes logrotate vim-nox hardlink curl ca-certificates
+apt-get install -q --yes logrotate vim-nox hardlink curl ca-certificates erlang-base iproute2
 
 # Download and install Chef's packages
 curl -fsSL ${OMNITRUCK_URL} | bash -s -- -P ${SERVER_PROJECT} -v ${SERVER_VERSION}
@@ -27,8 +27,9 @@ ln -sfv /var/opt/opscode/log /var/log/opscode
 ln -sfv /var/opt/opscode/etc /etc/opscode
 ln -sfv /opt/opscode/sv/logrotate /opt/opscode/service
 ln -sfv /opt/opscode/embedded/bin/sv /opt/opscode/init/logrotate
+if [ ! -d /etc/init ]; then ln -sfv /etc/init.d/ /etc/init; fi
 chef-apply -e 'chef_gem "knife-opc"'
 
 # Cleanup
 cd /
-rm -rf $tmpdir /tmp/install.sh /var/lib/apt/lists/* /var/cache/apt/archives/*
+rm -rf /tmp/install.sh /var/lib/apt/lists/* /var/cache/apt/archives/*

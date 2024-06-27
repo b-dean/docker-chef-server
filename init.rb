@@ -90,6 +90,11 @@ log 'Preparing configuration ...'
 FileUtils.mkdir_p %w'/var/opt/opscode/log /var/opt/opscode/etc /.chef/env', verbose: true
 FileUtils.cp '/.chef/chef-server.rb', '/var/opt/opscode/etc', verbose: true
 
+if ENV['PUBLIC_URL'].nil? || ENV['PUBLIC_URL'].empty?
+  log 'ERROR: must set environment variable PUBLIC_URL'
+  exit 1
+end
+
 %w'PUBLIC_URL OC_ID_ADMINISTRATORS'.each do |var|
   File.write(File.join('/.chef/env', var), ENV[var].to_s)
 end

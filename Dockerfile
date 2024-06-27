@@ -21,4 +21,10 @@ COPY backup.sh /usr/local/bin/chef-server-backup
 
 ENV KNIFE_HOME /etc/chef
 
+# set this at runtime to the public url for the chef server
+ENV PUBLIC_URL=
+
+HEALTHCHECK \
+  CMD ["/usr/bin/chef-server-ctl", "status"]
+
 CMD [ "/opt/opscode/embedded/bin/ruby", "/init.rb" ]
