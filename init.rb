@@ -144,6 +144,10 @@ if File.exist? '/var/opt/opscode/bootstrapped'
       end
     end
   end
+
+  if ENV['FORCE_RECONFIGURE']
+    reconfigure! 'Forced reconfigure'
+  end
 else
   # not bootstrapped
   reconfigure! 'Not bootstrapped'

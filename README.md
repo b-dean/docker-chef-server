@@ -16,6 +16,7 @@ Environment Variables
    endpoint (e.g. `https://chef.example.com`)
  - `OC_ID_ADMINISTRATORS` - if set, it should be a comma-separated
    list of users that will be allowed to add oc_id applications
+ - `FORCE_RECONFIGURE` - if set, it will force reconfigure to run
 
 Ports
 -----
