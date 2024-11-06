@@ -2,21 +2,32 @@ Chef Server
 ===========
 
 This image runs
-[Chef Server 12](https://community.chef.io/downloads/tools/infra-server). The
-latest version is published as `ghcr.io/b-dean/chef-server:latest`. Version
-tags are available; current one is `ghcr.io/b-dean/chef-server:12.19.31`.
+[Chef Server 12](https://community.chef.io/downloads/tools/infra-server),
+[Chef Infra Server 15](https://docs.chef.io/server/), or
+[Cinc Server 15](https://cinc.sh/download/#cinc-server).
+
+The following images and tags are available:
+
+- [`ghcr.io/b-dean/chef-server`](https://github.com/b-dean/docker-chef-server/pkgs/container/chef-server)
+    - `12.19.31`
+    - `latest`, `15.10.12`
+- [`ghcr.io/b-dean/cinc-server`](https://github.com/b-dean/docker-chef-server/pkgs/container/cinc-server)
+    - `latest`, `15.10.12`
 
 Git repository containing the Dockerfile lives at
-https://github.com/3ofcoins/docker-chef-server/
+https://github.com/b-dean/docker-chef-server/
 
 Environment Variables
 ---------------------
 
- - `PUBLIC_URL` - should be configured to a full public URL of the
-   endpoint (e.g. `https://chef.example.com`)
- - `OC_ID_ADMINISTRATORS` - if set, it should be a comma-separated
-   list of users that will be allowed to add oc_id applications
- - `FORCE_RECONFIGURE` - if set, it will force reconfigure to run
+- `PUBLIC_URL` - should be configured to a full public URL of the
+  endpoint (e.g. `https://chef.example.com`)
+- `OC_ID_ADMINISTRATORS` - if set, it should be a comma-separated
+  list of users that will be allowed to add oc_id applications
+- `FORCE_RECONFIGURE` - if set, it will force reconfigure to run
+- `CHEF_LICENSE` - If you use Chef server 13 or newer, you need to
+  have a license from [Progress Chef](https://chef.io).
+  Valid values are `accept` or `accept-no-persist`
 
 Ports
 -----
