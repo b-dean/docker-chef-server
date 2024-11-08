@@ -23,6 +23,7 @@ else
   api_fqdn "#{_uri.hostname}:#{_uri.port}"
 end
 
+user['home'] = '/var/opt/opscode'
 bookshelf['external_url'] = _uri.to_s
 bookshelf['url'] = _uri.to_s
 nginx['enable_non_ssl'] = true

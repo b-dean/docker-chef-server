@@ -15,32 +15,31 @@ jobs:
         include:
           - version:
               server: 12.19.31
-              client: 14.15.6
             chef_flavor:
               repo_name: chef-server
+              server_subdir: opscode
             base:
               image: ubuntu
               tag: 18.04
           - version:
               server: 15.10.12
-              client: 18.5.0
               latest: true
             chef_flavor:
               repo_name: chef-server
-              license: accept-no-persist
+              server_subdir: opscode
+              server_user: opscode
             base:
               image: ubuntu
               tag: 24.04
           - version:
               server: 15.10.12
-              client: 18.5.0
               latest: true
             chef_flavor:
               repo_name: cinc-server
               omnitruck: https://omnitruck.cinc.sh/install.sh
               server_project: cinc-server
-              client_project: cinc
-              server_dir: /opt/cinc-project
+              server_subdir: cinc-project
+              server_user: cinc
             base:
               image: debian
               tag: 12
@@ -88,8 +87,8 @@ jobs:
             OMNITRUCK_URL=${{ matrix.chef_flavor.omnitruck }}
             SERVER_PROJECT=${{ matrix.chef_flavor.server_project }}
             CLIENT_PROJECT=${{ matrix.chef_flavor.client_project }}
-            SERVER_INSTALL_DIR=${{ matrix.chef_flavor.server_dir }}
-            CHEF_LICENSE=${{ matrix.chef_flavor.license }}
+            SERVER_SUBDIR=${{ matrix.chef_flavor.server_subdir }}
+            SERVER_USER=${{ matrix.chef_flavor.server_user }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

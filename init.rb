@@ -87,8 +87,15 @@ log "Starting #{$PROGRAM_NAME}"
 end
 
 log 'Preparing configuration ...'
-FileUtils.mkdir_p %w'/var/opt/opscode/log /var/opt/opscode/etc /.chef/env', verbose: true
+FileUtils.mkdir_p %w'/var/opt/opscode/sv /var/opt/opscode/log /var/opt/opscode/etc /var/opt/opscode/cache/omnibus /.chef/env', verbose: true
 FileUtils.cp '/.chef/chef-server.rb', '/var/opt/opscode/etc', verbose: true
+FileUtils.cp_r Dir['/.chef/sv/*'], '/var/opt/opscode/sv/', verbose: true
+FileUtils.cp_r '/.chef/embedded', '/var/opt/opscode/', verbose: true
+Dir['/var/opt/opscode/sv/*'].each do |sv_path|
+  sv_name = File.basename(sv_path)
+  FileUtils.ln_sf "/opt/opscode/sv/#{sv_name}", "/opt/opscode/service/#{sv_name}", verbose: true
+  FileUtils.ln_sf '/opt/opscode/embedded/bin/sv', "/opt/opscode/init/#{sv_name}", verbose: true
+end
 
 if ENV['PUBLIC_URL'].nil? || ENV['PUBLIC_URL'].empty?
   log 'ERROR: must set environment variable PUBLIC_URL'

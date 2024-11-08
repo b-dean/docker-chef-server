@@ -4,37 +4,54 @@ set -exo pipefail
 ## You can update the versions from the release notes pages
 # https://docs.chef.io/release_notes_server/
 : ${SERVER_VERSION:=12.18.14}
-# https://docs.chef.io/release_notes_client/
-: ${CLIENT_VERSION:=14.6.47}
 
 : ${OMNITRUCK_URL:=https://omnitruck.chef.io/install.sh}
 : ${SERVER_PROJECT:=chef-server}
-: ${CLIENT_PROJECT:=chef}
-: ${SERVER_INSTALL_DIR:=/opt/opscode}
+: ${SERVER_SUBDIR:=opscode}
+: ${SERVER_USER:=opscode}
+: ${SERVER_PGUSER:=opscode-pgsql}
 
 # Install prerequisites
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q --yes
-apt-get install -q --yes logrotate vim-nox hardlink curl ca-certificates erlang-base iproute2 make gcc
+apt-get install -q --yes logrotate vim-nox hardlink curl ca-certificates erlang-base iproute2 locales python3
+
+# fix en_US.UTF-8 locale
+echo 'LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8' > /etc/default/locale
+echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
+locale-gen
+
+# fake systemctl
+curl -fsSL -o /usr/bin/systemctl https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/refs/heads/master/files/docker/systemctl3.py
+chmod 755 /usr/bin/systemctl
+
 
 # Download and install Chef's packages
 curl -fsSL ${OMNITRUCK_URL} | bash -s -- -P ${SERVER_PROJECT} -v ${SERVER_VERSION}
-curl -fsSL ${OMNITRUCK_URL} | bash -s -- -P ${CLIENT_PROJECT} -v ${CLIENT_VERSION}
 
 # Extra setup
-[[ "${SERVER_INSTALL_DIR}" == "/opt/opscode" ]] || ln -sfv ${SERVER_INSTALL_DIR} /opt/opscode
-rm -rf /etc/opscode
 mkdir -p /etc/cron.hourly
-ln -sfv /var/opt/opscode/log /var/log/opscode
-ln -sfv /var/opt/opscode/etc /etc/opscode
-ln -sfv /opt/opscode/sv/logrotate /opt/opscode/service
-ln -sfv /opt/opscode/embedded/bin/sv /opt/opscode/init/logrotate
 if [ ! -d /etc/init ]; then ln -sfv /etc/init.d/ /etc/init; fi
-chef-apply -e 'chef_gem "knife-opc"'
-CLIENT_MAJOR=$(echo $CLIENT_VERSION | cut -f1 -d.)
-(( "$CLIENT_MAJOR" < 17 )) || chef-apply -e "chef_gem('knife') { version('~> $CLIENT_MAJOR.0') }"
+rm -rf /etc/opscode /etc/${SERVER_SUBDIR}
+ln -sfv /var/opt/${SERVER_SUBDIR}/log /var/log/${SERVER_SUBDIR}
+ln -sfv /var/opt/${SERVER_SUBDIR}/etc /etc/${SERVER_SUBDIR}
+rm -rf /opt/${SERVER_SUBDIR}/sv
+ln -sfv /var/opt/${SERVER_SUBDIR}/sv /opt/${SERVER_SUBDIR}/sv
+mkdir -p /.chef/embedded/opensearch/config
+mv /opt/${SERVER_SUBDIR}/embedded/service /.chef/embedded/
+ln -sfv /var/opt/${SERVER_SUBDIR}/embedded/service /opt/${SERVER_SUBDIR}/embedded/service
+ln -sfv /var/opt/${SERVER_SUBDIR}/embedded/opensearch/config /opt/${SERVER_SUBDIR}/embedded/opensearch/config
+ln -sfv /var/opt/${SERVER_SUBDIR}/cache/omnibus /var/cache/omnibus
+if [[ "${SERVER_SUBDIR}" != "opscode" ]]; then
+  ln -sfv /etc/${SERVER_SUBDIR} /etc/opscode
+  ln -sfv /opt/${SERVER_SUBDIR} /opt/opscode
+  ln -sfv /var/log/${SERVER_SUBDIR} /var/log/opscode
+  ln -sfv /var/opt/${SERVER_SUBDIR} /var/opt/opscode
+fi
+
+# make users
+useradd -lrUM -s /bin/sh -d /var/opt/${SERVER_SUBDIR}/postgresql ${SERVER_PGUSER}
+useradd -lrUM -s /bin/sh -d /var/opt/${SERVER_SUBDIR} ${SERVER_USER}
 
 # Cleanup
-cd /
-apt-get autoremove -q -y make gcc
-rm -rf /tmp/install.sh /var/lib/apt/lists/* /var/cache/apt/archives/*
+rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
